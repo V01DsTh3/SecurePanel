@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Backup Manager | SecurePanel</title>
+    <link rel="stylesheet" href="/static/css/style.css">
+</head>
+<body>
+    <div class="container">
+        <header class="header">
+            <a href="/" class="logo">
+                <div class="logo-icon">🛡️</div>
+                <div class="logo-text">Secure<span>Panel</span></div>
+            </a>
+            <nav class="nav">
+                <a href="/dashboard" class="nav-link">Dashboard</a>
+                <a href="/profile" class="nav-link">Profile</a>
+                <a href="/admin" class="nav-link active">Admin</a>
+                <a href="/logout" class="nav-link">Logout</a>
+            </nav>
+        </header>
+
+        <div class="animate-fade-in">
+            <h1>Backup Manager</h1>
+            <p>Create and manage system backups.</p>
+        </div>
+
+        <!-- Create Backup -->
+        <div class="card animate-fade-in delay-1">
+            <div class="card-header">
+                <div class="card-icon">💾</div>
+                <div>
+                    <div class="card-title">Create Backup</div>
+                    <div class="card-subtitle">Archive files and directories</div>
+                </div>
+            </div>
+
+            <form method="POST" action="/admin/system/backup">
+                <input type="hidden" name="action" value="create">
+                
+                <div class="form-group">
+                    <label class="form-label" for="backup_name">Backup Name</label>
+                    <input type="text" id="backup_name" name="backup_name" class="form-input" 
+                           placeholder="e.g., webapp_backup_2024" required>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label" for="source_path">Source Directory</label>
+                    <input type="text" id="source_path" name="source_path" class="form-input" 
+                           placeholder="e.g., /opt/webapp" value="/opt/webapp">
+                </div>
+
+                <button type="submit" class="btn btn-primary">
+                    <span>📦</span>
+                    <span>Create Backup</span>
+                </button>
+            </form>
+        </div>
+
+        <!-- Existing Backups -->
+        <div class="card animate-fade-in delay-2">
+            <div class="card-header">
+                <div class="card-icon">📁</div>
+                <div>
+                    <div class="card-title">Existing Backups</div>
+                    <div class="card-subtitle">Previously created backup archives</div>
+                </div>
+            </div>
+
+            {% if backups %}
+            <div class="table-container">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Filename</th>
+                            <th>Size</th>
+                            <th>Created</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for backup in backups %}
+                        <tr>
+                            <td><code style="color: var(--accent-cyan);">{{ backup.name }}</code></td>
+                            <td>{{ backup.size }}</td>
+                            <td>{{ backup.created }}</td>
+                            <td>
+                                <form method="POST" action="/admin/system/backup" style="display: inline;">
+                                    <input type="hidden" name="action" value="delete">
+                                    <input type="hidden" name="filename" value="{{ backup.name }}">
+                                    <button type="submit" class="btn btn-danger btn-sm" 
+                                            onclick="return confirm('Delete this backup?')">
+                                        <span>🗑️</span>
+                                    </button>
+                                </form>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            {% else %}
+            <div class="alert alert-warning">
+                <span>📭</span>
+                <span>No backups found. Create your first backup above.</span>
+            </div>
+            {% endif %}
+        </div>
+
+        {% if message %}
+        <div class="alert {% if 'error' in message.lower() %}alert-error{% else %}alert-success{% endif %} animate-fade-in">
+            <span>{% if 'error' in message.lower() %}❌{% else %}✓{% endif %}</span>
+            <span>{{ message }}</span>
+        </div>
+        {% endif %}
+
+        {% if output %}
+        <div class="card animate-fade-in">
+            <div class="card-header">
+                <div class="card-icon">📋</div>
+                <div>
+                    <div class="card-title">Command Output</div>
+                    <div class="card-subtitle">Backup operation result</div>
+                </div>
+            </div>
+            <div class="terminal">
+                <pre>{{ output }}</pre>
+            </div>
+        </div>
+        {% endif %}
+
+        <a href="/admin" class="btn btn-secondary animate-fade-in delay-3">
+            <span>←</span>
+            <span>Back to Admin Panel</span>
+        </a>
+    </div>
+</body>
+</html>

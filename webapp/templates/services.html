@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Service Status | SecurePanel</title>
+    <link rel="stylesheet" href="/static/css/style.css">
+</head>
+<body>
+    <div class="container">
+        <header class="header">
+            <a href="/" class="logo">
+                <div class="logo-icon">🛡️</div>
+                <div class="logo-text">Secure<span>Panel</span></div>
+            </a>
+            <nav class="nav">
+                <a href="/dashboard" class="nav-link">Dashboard</a>
+                <a href="/profile" class="nav-link">Profile</a>
+                <a href="/admin" class="nav-link active">Admin</a>
+                <a href="/logout" class="nav-link">Logout</a>
+            </nav>
+        </header>
+
+        <div class="animate-fade-in">
+            <h1>Service Status</h1>
+            <p>Monitor and manage running services.</p>
+        </div>
+
+        <!-- Service List -->
+        <div class="card animate-fade-in delay-1">
+            <div class="card-header">
+                <div class="card-icon">⚙️</div>
+                <div>
+                    <div class="card-title">Running Services</div>
+                    <div class="card-subtitle">Current service status on this server</div>
+                </div>
+            </div>
+
+            <div class="table-container">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Service</th>
+                            <th>Status</th>
+                            <th>PID</th>
+                            <th>Uptime</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for service in services %}
+                        <tr>
+                            <td><code style="color: var(--accent-cyan);">{{ service.name }}</code></td>
+                            <td>
+                                <span class="status">
+                                    <span class="status-dot {% if service.status == 'running' %}online{% else %}offline{% endif %}"></span>
+                                    <span>{{ service.status }}</span>
+                                </span>
+                            </td>
+                            <td><code>{{ service.pid or '-' }}</code></td>
+                            <td>{{ service.uptime or '-' }}</td>
+                            <td>
+                                <form method="POST" action="/admin/system/services" style="display: inline-flex; gap: 8px;">
+                                    <input type="hidden" name="service" value="{{ service.name }}">
+                                    {% if service.status == 'running' %}
+                                    <button type="submit" name="action" value="restart" class="btn btn-secondary btn-sm">
+                                        <span>🔄</span>
+                                    </button>
+                                    <button type="submit" name="action" value="stop" class="btn btn-danger btn-sm">
+                                        <span>⏹️</span>
+                                    </button>
+                                    {% else %}
+                                    <button type="submit" name="action" value="start" class="btn btn-primary btn-sm">
+                                        <span>▶️</span>
+                                    </button>
+                                    {% endif %}
+                                </form>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Service Control -->
+        <div class="card animate-fade-in delay-2">
+            <div class="card-header">
+                <div class="card-icon">🎛️</div>
+                <div>
+                    <div class="card-title">Service Control</div>
+                    <div class="card-subtitle">Manage any system service</div>
+                </div>
+            </div>
+
+            <form method="POST" action="/admin/system/services">
+                <div style="display: flex; gap: 16px; flex-wrap: wrap; align-items: flex-end;">
+                    <div class="form-group" style="margin-bottom: 0; flex: 1; min-width: 200px;">
+                        <label class="form-label" for="service">Service Name</label>
+                        <input type="text" id="service" name="service" class="form-input" 
+                               placeholder="e.g., nginx, mysql, ssh">
+                    </div>
+
+                    <div class="form-group" style="margin-bottom: 0;">
+                        <label class="form-label" for="action">Action</label>
+                        <select name="action" id="action" class="form-select" style="width: 150px;">
+                            <option value="status">Status</option>
+                            <option value="start">Start</option>
+                            <option value="stop">Stop</option>
+                            <option value="restart">Restart</option>
+                        </select>
+                    </div>
+
+                    <button type="submit" class="btn btn-primary">
+                        <span>⚡</span>
+                        <span>Execute</span>
+                    </button>
+                </div>
+            </form>
+        </div>
+
+        {% if output %}
+        <div class="card animate-fade-in">
+            <div class="card-header">
+                <div class="card-icon">📋</div>
+                <div>
+                    <div class="card-title">Command Output</div>
+                    <div class="card-subtitle">Service control result</div>
+                </div>
+            </div>
+            <div class="terminal">
+                <pre>{{ output }}</pre>
+            </div>
+        </div>
+        {% endif %}
+
+        {% if message %}
+        <div class="alert {% if 'error' in message.lower() %}alert-error{% else %}alert-success{% endif %} animate-fade-in">
+            <span>{% if 'error' in message.lower() %}❌{% else %}✓{% endif %}</span>
+            <span>{{ message }}</span>
+        </div>
+        {% endif %}
+
+        <a href="/admin" class="btn btn-secondary animate-fade-in delay-3">
+            <span>←</span>
+            <span>Back to Admin Panel</span>
+        </a>
+    </div>
+</body>
+</html>

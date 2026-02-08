@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Profile | SecurePanel</title>
+    <link rel="stylesheet" href="/static/css/style.css">
+</head>
+<body>
+    <div class="container">
+        <header class="header">
+            <a href="/" class="logo">
+                <div class="logo-icon">🛡️</div>
+                <div class="logo-text">Secure<span>Panel</span></div>
+            </a>
+            <nav class="nav">
+                <a href="/dashboard" class="nav-link">Dashboard</a>
+                <a href="/profile" class="nav-link active">Profile</a>
+                <a href="/logout" class="nav-link">Logout</a>
+            </nav>
+        </header>
+
+        <div class="animate-fade-in">
+            <h1>My Profile</h1>
+            <p>View and manage your account settings.</p>
+        </div>
+
+        <div class="card animate-fade-in delay-1">
+            <div class="card-header">
+                <div class="card-icon">👤</div>
+                <div>
+                    <div class="card-title">Account Information</div>
+                    <div class="card-subtitle">Your personal details</div>
+                </div>
+            </div>
+
+            <div class="table-container mb-4">
+                <table>
+                    <tr>
+                        <th style="width: 200px;">Property</th>
+                        <th>Value</th>
+                    </tr>
+                    <tr>
+                        <td><strong>Username</strong></td>
+                        <td><code style="color: var(--accent-cyan);">{{ user.username }}</code></td>
+                    </tr>
+                    <tr>
+                        <td><strong>Current Role</strong></td>
+                        <td>
+                            <span class="badge {% if user.role == 'admin' %}badge-admin{% else %}badge-user{% endif %}">
+                                {{ user.role }}
+                            </span>
+                        </td>
+                    </tr>
+                </table>
+            </div>
+        </div>
+
+        <div class="card animate-fade-in delay-2">
+            <div class="card-header">
+                <div class="card-icon">⚙️</div>
+                <div>
+                    <div class="card-title">Profile Settings</div>
+                    <div class="card-subtitle">Update your account preferences</div>
+                </div>
+            </div>
+
+            <form id="profileForm" method="POST" action="/api/profile/update">
+                <!-- Hidden user_id field - IDOR vulnerability: can be modified via Burp Suite -->
+                <input type="hidden" name="user_id" value="{{ user_id }}">
+                
+                <div class="form-group">
+                    <label class="form-label" for="new_username">Display Name</label>
+                    <input 
+                        type="text" 
+                        id="new_username" 
+                        name="new_username" 
+                        class="form-input" 
+                        placeholder="Enter new username"
+                        value="{{ user.username }}"
+                    >
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label" for="role">Account Type</label>
+                    <!-- Greyed out but value still sent - backend accepts 'admin' if modified in request -->
+                    <select name="role" id="role" class="form-select" disabled style="opacity: 0.5; cursor: not-allowed;">
+                        <option value="user" selected>Standard User</option>
+                    </select>
+                    <!-- Hidden field to actually send the role value since disabled fields aren't submitted -->
+                    <input type="hidden" name="role" value="user">
+                    <p class="text-muted" style="font-size: 0.8rem; margin-top: 8px;">
+                        🔒 Account type cannot be changed. Contact an administrator for elevated privileges.
+                    </p>
+                </div>
+
+                <hr style="border: none; border-top: 1px solid var(--border-color); margin: 24px 0;">
+
+                <h3 style="margin-bottom: 16px; font-size: 1rem; color: var(--text-secondary);">Change Password</h3>
+
+                <div class="form-group">
+                    <label class="form-label" for="current_password">Current Password</label>
+                    <input 
+                        type="password" 
+                        id="current_password" 
+                        name="current_password" 
+                        class="form-input" 
+                        placeholder="Enter current password"
+                    >
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label" for="new_password">New Password</label>
+                    <input 
+                        type="password" 
+                        id="new_password" 
+                        name="new_password" 
+                        class="form-input" 
+                        placeholder="Enter new password"
+                    >
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label" for="confirm_password">Confirm New Password</label>
+                    <input 
+                        type="password" 
+                        id="confirm_password" 
+                        name="confirm_password" 
+                        class="form-input" 
+                        placeholder="Confirm new password"
+                    >
+                </div>
+
+                <button type="submit" class="btn btn-primary">
+                    <span>💾</span>
+                    <span>Save Changes</span>
+                </button>
+            </form>
+
+            <div id="message" class="mt-4"></div>
+        </div>
+
+        <a href="/dashboard" class="btn btn-secondary animate-fade-in delay-3">
+            <span>←</span>
+            <span>Back to Dashboard</span>
+        </a>
+    </div>
+
+    <script>
+        document.getElementById('profileForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            const newPassword = document.getElementById('new_password').value;
+            const confirmPassword = document.getElementById('confirm_password').value;
+            const msgDiv = document.getElementById('message');
+            
+            // Client-side validation for password confirmation
+            if (newPassword && newPassword !== confirmPassword) {
+                msgDiv.innerHTML = '<div class="alert alert-error"><span>✗</span><span>New passwords do not match.</span></div>';
+                return;
+            }
+            
+            const formData = new FormData(this);
+            
+            fetch('/api/profile/update', {
+                method: 'POST',
+                body: formData
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    msgDiv.innerHTML = '<div class="alert alert-success"><span>✓</span><span>' + data.message + '</span></div>';
+                    setTimeout(() => location.reload(), 1500);
+                } else {
+                    msgDiv.innerHTML = '<div class="alert alert-error"><span>✗</span><span>Error: ' + data.error + '</span></div>';
+                }
+            })
+            .catch(err => {
+                msgDiv.innerHTML = '<div class="alert alert-error"><span>✗</span><span>Request failed. Please try again.</span></div>';
+            });
+        });
+    </script>
+</body>
+</html>

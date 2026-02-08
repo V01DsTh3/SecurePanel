@@ -1,0 +1,256 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Panel | SecurePanel</title>
+    <link rel="stylesheet" href="/static/css/style.css">
+</head>
+<body>
+    <div class="container">
+        <header class="header">
+            <a href="/" class="logo">
+                <div class="logo-icon">🛡️</div>
+                <div class="logo-text">Secure<span>Panel</span></div>
+            </a>
+            <nav class="nav">
+                <a href="/dashboard" class="nav-link">Dashboard</a>
+                <a href="/profile" class="nav-link">Profile</a>
+                <a href="/admin" class="nav-link active">Admin</a>
+                <a href="/logout" class="nav-link">Logout</a>
+            </nav>
+        </header>
+
+        <div class="animate-fade-in">
+            <h1>Admin Panel</h1>
+            <p>System administration and user management tools.</p>
+        </div>
+
+        <div class="stats-grid animate-fade-in delay-1">
+            <div class="stat-card">
+                <div class="stat-value">{{ users|length }}</div>
+                <div class="stat-label">Total Users</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-value">
+                    {{ users|selectattr('role', 'equalto', 'admin')|list|length }}
+                </div>
+                <div class="stat-label">Administrators</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-value">
+                    <span class="status">
+                        <span class="status-dot online"></span>
+                    </span>
+                </div>
+                <div class="stat-label">System Status</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-value">v2.4.1</div>
+                <div class="stat-label">Panel Version</div>
+            </div>
+        </div>
+
+        <!-- System Tools Section -->
+        <div class="card animate-fade-in delay-1">
+            <div class="card-header">
+                <div class="card-icon">🖥️</div>
+                <div>
+                    <div class="card-title">System Tools</div>
+                    <div class="card-subtitle">Server diagnostics and maintenance utilities</div>
+                </div>
+            </div>
+
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 16px;">
+                <a href="/admin/system/diagnostics" class="tool-card">
+                    <div class="tool-icon">📡</div>
+                    <div class="tool-info">
+                        <div class="tool-name">Network Diagnostics</div>
+                        <div class="tool-desc">Ping, DNS lookup, and connectivity tests</div>
+                    </div>
+                </a>
+                <a href="/admin/system/logs" class="tool-card">
+                    <div class="tool-icon">📋</div>
+                    <div class="tool-info">
+                        <div class="tool-name">System Logs</div>
+                        <div class="tool-desc">View application and server logs</div>
+                    </div>
+                </a>
+                <a href="/admin/system/backup" class="tool-card">
+                    <div class="tool-icon">💾</div>
+                    <div class="tool-info">
+                        <div class="tool-name">Backup Manager</div>
+                        <div class="tool-desc">Create and restore system backups</div>
+                    </div>
+                </a>
+                <a href="/admin/system/services" class="tool-card">
+                    <div class="tool-icon">⚙️</div>
+                    <div class="tool-info">
+                        <div class="tool-name">Service Status</div>
+                        <div class="tool-desc">Monitor running services</div>
+                    </div>
+                </a>
+            </div>
+        </div>
+
+        <!-- User Management Section -->
+        <div class="card animate-fade-in delay-2">
+            <div class="card-header">
+                <div class="card-icon">👥</div>
+                <div>
+                    <div class="card-title">User Management</div>
+                    <div class="card-subtitle">Manage registered accounts</div>
+                </div>
+            </div>
+
+            <div class="table-container">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Username</th>
+                            <th>Role</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for user in users %}
+                        <tr>
+                            <td><code style="color: var(--text-muted);">#{{ loop.index0 }}</code></td>
+                            <td>
+                                <code style="color: var(--accent-cyan);">{{ user.username }}</code>
+                            </td>
+                            <td>
+                                <span class="badge {% if user.role == 'admin' %}badge-admin{% else %}badge-user{% endif %}">
+                                    {{ user.role }}
+                                </span>
+                            </td>
+                            <td>
+                                {% if user.username != 'admin' %}
+                                <a href="/admin/delete_user/{{ user.username }}" 
+                                   class="btn btn-danger btn-sm"
+                                   onclick="return confirm('Are you sure you want to delete {{ user.username }}?')">
+                                    <span>🗑️</span>
+                                    <span>Delete</span>
+                                </a>
+                                {% else %}
+                                <span class="text-muted" style="font-size: 0.85rem;">Protected</span>
+                                {% endif %}
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Add User Section -->
+        <div class="card animate-fade-in delay-3">
+            <div class="card-header">
+                <div class="card-icon">➕</div>
+                <div>
+                    <div class="card-title">Add New User</div>
+                    <div class="card-subtitle">Create a new account</div>
+                </div>
+            </div>
+
+            <form method="POST" action="/admin/add_user">
+                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 16px;">
+                    <div class="form-group" style="margin-bottom: 0;">
+                        <label class="form-label" for="username">Username</label>
+                        <input type="text" id="username" name="username" class="form-input" placeholder="Enter username" required>
+                    </div>
+
+                    <div class="form-group" style="margin-bottom: 0;">
+                        <label class="form-label" for="password">Password</label>
+                        <input type="text" id="password" name="password" class="form-input" placeholder="Enter password" required>
+                    </div>
+
+                    <div class="form-group" style="margin-bottom: 0;">
+                        <label class="form-label" for="role">Role</label>
+                        <select name="role" id="role" class="form-select">
+                            <option value="user">User</option>
+                            <option value="admin">Admin</option>
+                        </select>
+                    </div>
+                </div>
+
+                <button type="submit" class="btn btn-primary mt-4">
+                    <span>➕</span>
+                    <span>Create User</span>
+                </button>
+            </form>
+        </div>
+
+        <!-- Quick Actions -->
+        <div class="card animate-fade-in delay-3">
+            <div class="card-header">
+                <div class="card-icon">⚡</div>
+                <div>
+                    <div class="card-title">Quick Actions</div>
+                    <div class="card-subtitle">Common administrative tasks</div>
+                </div>
+            </div>
+
+            <div class="flex gap-2" style="flex-wrap: wrap;">
+                <a href="/admin/system/diagnostics" class="btn btn-secondary">
+                    <span>🔍</span>
+                    <span>Run Diagnostics</span>
+                </a>
+                <a href="/admin/system/logs" class="btn btn-secondary">
+                    <span>📋</span>
+                    <span>View Logs</span>
+                </a>
+                <a href="/admin/system/backup" class="btn btn-secondary">
+                    <span>💾</span>
+                    <span>Create Backup</span>
+                </a>
+            </div>
+        </div>
+
+        <a href="/dashboard" class="btn btn-secondary animate-fade-in">
+            <span>←</span>
+            <span>Back to Dashboard</span>
+        </a>
+    </div>
+
+    <style>
+        .tool-card {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            padding: 20px;
+            background: var(--bg-tertiary);
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-md);
+            text-decoration: none;
+            transition: all 0.3s ease;
+        }
+        .tool-card:hover {
+            border-color: var(--accent-cyan);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 20px rgba(0, 212, 255, 0.1);
+            text-decoration: none;
+        }
+        .tool-icon {
+            font-size: 2rem;
+            width: 50px;
+            height: 50px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: rgba(0, 212, 255, 0.1);
+            border-radius: var(--radius-md);
+        }
+        .tool-name {
+            font-weight: 600;
+            color: var(--text-primary);
+            margin-bottom: 4px;
+        }
+        .tool-desc {
+            font-size: 0.85rem;
+            color: var(--text-secondary);
+        }
+    </style>
+</body>
+</html>

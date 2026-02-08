@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>System Logs | SecurePanel</title>
+    <link rel="stylesheet" href="/static/css/style.css">
+</head>
+<body>
+    <div class="container">
+        <header class="header">
+            <a href="/" class="logo">
+                <div class="logo-icon">🛡️</div>
+                <div class="logo-text">Secure<span>Panel</span></div>
+            </a>
+            <nav class="nav">
+                <a href="/dashboard" class="nav-link">Dashboard</a>
+                <a href="/profile" class="nav-link">Profile</a>
+                <a href="/admin" class="nav-link active">Admin</a>
+                <a href="/logout" class="nav-link">Logout</a>
+            </nav>
+        </header>
+
+        <div class="animate-fade-in">
+            <h1>System Logs</h1>
+            <p>View and analyze application and server logs.</p>
+        </div>
+
+        <!-- Quick Log Access -->
+        <div class="card animate-fade-in delay-1">
+            <div class="card-header">
+                <div class="card-icon">📁</div>
+                <div>
+                    <div class="card-title">Quick Access</div>
+                    <div class="card-subtitle">Common log files</div>
+                </div>
+            </div>
+
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 12px;">
+                <a href="/admin/system/logs?file=access.log" class="log-btn">
+                    <span>📋</span> Access Log
+                </a>
+                <a href="/admin/system/logs?file=error.log" class="log-btn">
+                    <span>❌</span> Error Log
+                </a>
+                <a href="/admin/system/logs?file=auth.log" class="log-btn">
+                    <span>🔐</span> Auth Log
+                </a>
+                <a href="/admin/system/logs?file=app.log" class="log-btn">
+                    <span>📱</span> App Log
+                </a>
+            </div>
+        </div>
+
+        <!-- Custom Log Viewer -->
+        <div class="card animate-fade-in delay-2">
+            <div class="card-header">
+                <div class="card-icon">🔍</div>
+                <div>
+                    <div class="card-title">Custom Log Viewer</div>
+                    <div class="card-subtitle">View any log file on the system</div>
+                </div>
+            </div>
+
+            <form method="GET" action="/admin/system/logs">
+                <div class="form-group">
+                    <label class="form-label" for="file">Log File Path</label>
+                    <input type="text" id="file" name="file" class="form-input" 
+                           placeholder="e.g., /var/log/syslog" 
+                           value="{{ current_file or '' }}">
+                    <p class="text-muted" style="font-size: 0.8rem; margin-top: 8px;">
+                        Enter the path to any log file you want to view.
+                    </p>
+                </div>
+
+                <div style="display: flex; gap: 12px; flex-wrap: wrap;">
+                    <div class="form-group" style="margin-bottom: 0;">
+                        <label class="form-label" for="lines">Lines to Display</label>
+                        <select name="lines" id="lines" class="form-select" style="width: 150px;">
+                            <option value="50" {% if lines == 50 %}selected{% endif %}>Last 50</option>
+                            <option value="100" {% if lines == 100 %}selected{% endif %}>Last 100</option>
+                            <option value="200" {% if lines == 200 %}selected{% endif %}>Last 200</option>
+                            <option value="500" {% if lines == 500 %}selected{% endif %}>Last 500</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group" style="margin-bottom: 0;">
+                        <label class="form-label" for="filter">Filter (grep)</label>
+                        <input type="text" id="filter" name="filter" class="form-input" 
+                               placeholder="e.g., ERROR" style="width: 200px;"
+                               value="{{ filter or '' }}">
+                    </div>
+                </div>
+
+                <button type="submit" class="btn btn-primary mt-4">
+                    <span>📖</span>
+                    <span>View Log</span>
+                </button>
+            </form>
+        </div>
+
+        {% if output %}
+        <div class="card animate-fade-in">
+            <div class="card-header">
+                <div class="card-icon">📋</div>
+                <div>
+                    <div class="card-title">Log Output</div>
+                    <div class="card-subtitle">{{ current_file }}</div>
+                </div>
+            </div>
+            <div class="terminal" style="max-height: 500px; overflow-y: auto;">
+                <pre>{{ output }}</pre>
+            </div>
+        </div>
+        {% elif error %}
+        <div class="alert alert-error animate-fade-in">
+            <span>❌</span>
+            <span>{{ error }}</span>
+        </div>
+        {% endif %}
+
+        <a href="/admin" class="btn btn-secondary animate-fade-in delay-3">
+            <span>←</span>
+            <span>Back to Admin Panel</span>
+        </a>
+    </div>
+
+    <style>
+        .log-btn {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 12px 16px;
+            background: var(--bg-tertiary);
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-md);
+            color: var(--text-primary);
+            text-decoration: none;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.85rem;
+            transition: all 0.2s ease;
+        }
+        .log-btn:hover {
+            border-color: var(--accent-cyan);
+            background: rgba(0, 212, 255, 0.1);
+            text-decoration: none;
+        }
+    </style>
+</body>
+</html>

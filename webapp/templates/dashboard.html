@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard | SecurePanel</title>
+    <link rel="stylesheet" href="/static/css/style.css">
+</head>
+<body>
+    <div class="container">
+        <header class="header">
+            <a href="/" class="logo">
+                <div class="logo-icon">🛡️</div>
+                <div class="logo-text">Secure<span>Panel</span></div>
+            </a>
+            <nav class="nav">
+                <a href="/dashboard" class="nav-link active">Dashboard</a>
+                <a href="/profile" class="nav-link">Profile</a>
+                {% if role == 'admin' %}
+                <a href="/admin" class="nav-link">Admin</a>
+                {% endif %}
+                <a href="/logout" class="nav-link">Logout</a>
+            </nav>
+        </header>
+
+        <div class="animate-fade-in">
+            <h1>Dashboard</h1>
+            <p>Welcome back to your security command center.</p>
+        </div>
+
+        <div class="stats-grid animate-fade-in delay-1">
+            <div class="stat-card">
+                <div class="stat-value">{{ username }}</div>
+                <div class="stat-label">Logged In As</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-value">
+                    <span class="badge {% if role == 'admin' %}badge-admin{% else %}badge-user{% endif %}">
+                        {{ role }}
+                    </span>
+                </div>
+                <div class="stat-label">Access Level</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-value">
+                    <span class="status">
+                        <span class="status-dot online"></span>
+                    </span>
+                </div>
+                <div class="stat-label">Session Status</div>
+            </div>
+        </div>
+
+        <div class="card animate-fade-in delay-2">
+            <div class="card-header">
+                <div class="card-icon">👤</div>
+                <div>
+                    <div class="card-title">Account Overview</div>
+                    <div class="card-subtitle">Your current session information</div>
+                </div>
+            </div>
+
+            <div class="table-container">
+                <table>
+                    <tr>
+                        <th style="width: 200px;">Property</th>
+                        <th>Value</th>
+                    </tr>
+                    <tr>
+                        <td><strong>Username</strong></td>
+                        <td><code style="color: var(--accent-cyan);">{{ username }}</code></td>
+                    </tr>
+                    <tr>
+                        <td><strong>Role</strong></td>
+                        <td>
+                            <span class="badge {% if role == 'admin' %}badge-admin{% else %}badge-user{% endif %}">
+                                {{ role }}
+                            </span>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td><strong>Status</strong></td>
+                        <td>
+                            <span class="status">
+                                <span class="status-dot online"></span>
+                                <span>Active Session</span>
+                            </span>
+                        </td>
+                    </tr>
+                </table>
+            </div>
+        </div>
+
+        <div class="card animate-fade-in delay-3">
+            <div class="card-header">
+                <div class="card-icon">🚀</div>
+                <div>
+                    <div class="card-title">Quick Actions</div>
+                    <div class="card-subtitle">Frequently used tools and settings</div>
+                </div>
+            </div>
+
+            <div class="flex gap-2" style="flex-wrap: wrap;">
+                <a href="/profile" class="btn btn-secondary">
+                    <span>👤</span>
+                    <span>My Profile</span>
+                </a>
+                {% if role == 'admin' %}
+                <a href="/admin" class="btn btn-primary">
+                    <span>⚙️</span>
+                    <span>Admin Panel</span>
+                </a>
+                <a href="/admin/system" class="btn btn-secondary">
+                    <span>🖥️</span>
+                    <span>System Tools</span>
+                </a>
+                {% endif %}
+                <a href="/logout" class="btn btn-danger">
+                    <span>🚪</span>
+                    <span>Logout</span>
+                </a>
+            </div>
+        </div>
+
+        {% if role != 'admin' %}
+        <div class="alert alert-warning animate-fade-in delay-3">
+            <span>⚠️</span>
+            <span>You have limited access. Contact an administrator for elevated privileges.</span>
+        </div>
+        {% endif %}
+    </div>
+</body>
+</html>
