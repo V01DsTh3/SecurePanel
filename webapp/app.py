@@ -13,15 +13,6 @@ app = Flask(__name__)
 app.secret_key = "supersecretkey"  # intentionally weak
 
 def sanitize_input(user_input):
-    """
-    Basic input sanitization - filters common command injection characters
-    BYPASSABLE: Can be bypassed using:
-    - $(command) instead of backticks
-    - Newline characters %0a
-    - URL encoding
-    - ${IFS} instead of spaces
-    - Base64 encoding with eval
-    """
     if not user_input:
         return user_input
     
